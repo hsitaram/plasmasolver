@@ -79,7 +79,7 @@ subroutine setspecparams()
 
 	      specnames(1) = 'N'
 	      specnames(2) = 'E'
-	      specnames(3) = 'I'
+	      specnames(3) = 'I+'
 
 	      molmass(1) = 4.d0*mass_prot
 	      molmass(2) = mass_elec

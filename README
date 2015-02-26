@@ -1,0 +1,52 @@
+Introduction
+************
+
+This is a one dimensional glow discharge code using a pure fluid model. 
+The model solves continuity equations for electrons, ions and neutral species
+and poisson equation for electrostatic potential. Electron energy equation
+is solved to obtain electron temperature used in reaction and transport
+coefficient calculations. The model is similar to 
+Yuan et al., IEEE Trans. Plasma. Sci., 31,4,2003.
+
+Numerics
+*******
+The equations are discretized using first order upwind finite volume method.
+The time integration is semi-implicit with AX=B solves done via
+matrix-free GMRES with multi-grid preconditioning. Hence it uses number
+of grid points as 2^n + 1 for simplicity.
+
+Chemistry
+*********
+
+The chemistry file is stored in source/chemistry folder. It is
+essentially a fortran module with reactions, species info and
+rate calculation routines.
+ 
+You can create your own chemistry here by changing nspecies,nreac
+and adding reactions in assignreactions subroutine. The rate constants
+are arrhenius by default. Custom rate expressions can be added using
+getcustomrate function.  
+
+How to compile
+**************
+
+You will need a working gfortran/ifort compiler. Set the relevant
+parameters in the makefile. The chemistry file is set here. For
+now a single ion electron chemistry is added in source/chemistry folder. 
+
+To compile
+
+$make
+
+How to run
+**********
+
+move the executable plsolver_${CHEMFILEPREFIX}.exe to test folder.
+The plasma parameter inputs are given in plasma_inputs file.
+
+$./plsolver_${CHEMFILEPREFIX}.exe
+
+This test run takes about an hour to run. You can view snapshots
+using matplotlib python script
+
+$python plotplasmaparams.py <solnfile>
