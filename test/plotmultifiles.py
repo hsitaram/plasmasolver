@@ -76,18 +76,18 @@ def readfile(filename,enum,nbgspecies,nions,nneutrals,nspecies):
 		
 		for i in range(nbgspecies):
 			offset=offset+1
-			nden=np.append(nden,float(spltline[offset]))
+			nden=np.append(nden,float(spltline[offset+i]))
 
 		offset=offset+1
 		elecden=np.append(elecden,float(spltline[offset]))
 		
 		for i in range(nions):
 			offset=offset+1
-			ionden=np.append(ionden,float(spltline[offset]))
+			ionden=np.append(ionden,float(spltline[offset+i]))
 
 		for i in range(nneutrals):
 			offset=offset+1
-			nden=np.append(nden,float(spltline[offset]))
+			nden=np.append(nden,float(spltline[offset+i]))
 
 		offset=offset+1
 		electemp = np.append(electemp,float(spltline[offset]))
@@ -111,12 +111,12 @@ def readfile(filename,enum,nbgspecies,nions,nneutrals,nspecies):
 	return(x,elecden,ionden,nden,potential,efield,electemp,jheating,elasticol,inelasticol,electroncurr,ioncurr)
 #===================================================================
 
-fname=argv[1]
-
 (specnames,enum,nbgspecies,nions,nneut,gapd)=getspecinfo()
 
-(x,eden,iden,nden,pot,efield,etemp,ejheat,elcol,inelcol,electroncurr,ioncurr)=readfile(fname,enum,nbgspecies,nions,nneut,len(specnames))
-x=x/gapd
+fnames=[]
+
+for i in range(len(argv)-1):
+	fnames.append(argv[i+1])
 
 xlen=6.0
 ylen=3.0
@@ -125,67 +125,46 @@ m=2
 n=2
 lt=3
 
-
-npoints=len(x)
-iondens=np.zeros((nions,npoints))
-ndens=np.zeros((nneut,npoints))
-
-for i in range(npoints):
-	for j in range(nions):
-		iondens[j][i]=iden[i*nions+j]
-
-for i in range(npoints):
-	for j in range(nneut):
-		ndens[j][i]=nden[i*nneut+j]
-
 (fig,ax)=plt.subplots(m,n,figsize=(n*xlen,m*ylen))
-#fig.tight_layout()
 
-i=0
-j=0
-ax[i][j].plot(x,eden,'k*-',markevery=me,markeredgecolor='black',linewidth=lt,label="E")
-offset=nbgspecies+1
-for n in range(nions):
-	ax[i][j].plot(x,iondens[n],markevery=me+7,linewidth=lt,label=specnames[offset+n])
-ax[i][j].set_ylabel("number density (#/m3)")
-lg=ax[i][j].legend(loc="best",fontsize=12)
-lg.draw_frame(False)
+for fnum in range(len(fnames)):
+	fname=fnames[fnum]
 
-i=0
-j=1
-ax[i][j].plot(x,pot,'r*-',markevery=me,markeredgecolor='red',linewidth=lt,label="Potential")
-ax[i][j].set_ylabel("Voltage (V)")
-ax_twin=ax[i][j].twinx()
-ax_twin.plot(x,efield,'bo-',markevery=me+7,markeredgecolor='blue',linewidth=lt,label="Electric field")
-ax_twin.set_ylabel("Electric field (V/m)")
-lg=ax[i][j].legend(loc=1,fontsize=12)
-lg.draw_frame(False)
-lg=ax_twin.legend(loc=2,fontsize=12)
-lg.draw_frame(False)
+	(x,eden,iden,nden,pot,efield,etemp,ejheat,elcol,inelcol,electroncurr,ioncurr)=readfile(fname,enum,nbgspecies,nions,nneut,len(specnames))
+	x=x/gapd
 
-i=1
-j=0
-ax[i][j].plot(x,pot,'r*-',markevery=me,markeredgecolor='red',linewidth=lt,label="Potential")
-ax[i][j].set_ylabel("Voltage (V)")
-ax[i][j].set_xlabel("gap distance")
-ax_twin=ax[i][j].twinx()
-ax_twin.plot(x,etemp,'bo-',markevery=me+7,markeredgecolor='blue',linewidth=lt,label="Electron temperature")
-ax_twin.set_ylabel("electron temperature (eV)")
-lg=ax[i][j].legend(loc=1,fontsize=12)
-lg.draw_frame(False)
-lg=ax_twin.legend(loc=2,fontsize=12)
-lg.draw_frame(False)
+	npoints=len(x)
+	iondens=np.zeros((nions,npoints))
 
-i=1
-j=1
-ax[i][j].plot(x,ejheat,'r*-',markevery=me,markeredgecolor='red',linewidth=lt,label="Joule heating")
-ax[i][j].plot(x,elcol,'bo-',markevery=me,markeredgecolor='blue',linewidth=lt,label="Elastic collisions")
-ax[i][j].plot(x,inelcol,'gs-',markevery=me,markeredgecolor='green',linewidth=lt,label="Inelastic collisions")
-ax[i][j].set_xlabel("gap distance")
-ax[i][j].set_ylabel("power density (W/m3)")
-lg=ax[i][j].legend(loc="best",fontsize=12)
-lg.draw_frame(False)
+	for i in range(npoints):
+		for j in range(nions):
+			iondens[j][i]=iden[i*nions+j]
+
+	i=0
+	j=0
+	ax[i][j].plot(x,eden,markevery=me,linewidth=lt,label=fnames[fnum])
+	ax[i][j].set_ylabel("electron density (#/m3)")
+	lg=ax[i][j].legend(loc="best",fontsize=12)
+	lg.draw_frame(False)
+
+	i=0
+	j=1
+	ax[i][j].plot(x,iondens[0],markevery=me,linewidth=lt,label=fnames[fnum])
+	#ax[i][j].plot(x,nden,markevery=me,linewidth=lt,label=fnames[fnum])
+	ax[i][j].set_ylabel("ion density (#/m3)")
+
+	i=1
+	j=0
+	ax[i][j].plot(x,pot,markevery=me,linewidth=lt,label=fnames[fnum])
+	ax[i][j].set_ylabel("Voltage (V)")
+	
+	i=1
+	j=1
+	ax[i][j].plot(x,etemp,markevery=me,linewidth=lt,label=fnames[fnum])
+	ax[i][j].set_ylabel("Electron temp (eV)")
+
+	print "total current:",electroncurr[-1]+ioncurr[-1]
 
 fig.tight_layout()
-plt.savefig("plasmaparams.pdf")
+#plt.savefig("plasmaparams.pdf")
 plt.show()

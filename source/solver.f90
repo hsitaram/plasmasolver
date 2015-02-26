@@ -111,7 +111,7 @@ subroutine init()
 	
 	!number densities
 	read(inpfptr,*),temp
-	do i=2,nspecies
+	do i=1,nspecies
 		read(inpfptr,*),temp,specinit(i)
 	enddo
 
