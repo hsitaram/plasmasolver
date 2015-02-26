@@ -37,7 +37,7 @@ def getspecinfo():
 	
 	infile.close()
 
-	nneutrals=len(specnames)-nions-nbgspc
+	nneutrals=len(specnames)-nions-nbgspc-1
 
 	return(specnames,especnum,nbgspc,nions,nneutrals,l)
 #===================================================================
@@ -89,7 +89,8 @@ def readfile(filename,enum,nbgspecies,nions,nneutrals,nspecies):
 			offset=offset+1
 			nden=np.append(nden,float(spltline[offset+i]))
 
-		offset=offset+1
+		#missing electron energy field
+		offset=offset+2
 		electemp = np.append(electemp,float(spltline[offset]))
 		
 		offset=offset+1
