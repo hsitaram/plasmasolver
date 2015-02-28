@@ -789,12 +789,12 @@ subroutine printfile(it)
 	
 	integer, intent(in) :: it
 	character(LEN=50) :: fname
-	character(LEN=5) :: itstr
+	character(LEN=7) :: itstr
 	integer :: i,j
 	real*8 :: jheating(np),elastic_col(np),inelastic_col(np)
 	real*8 :: icurr(np),ecurr(np)
 
-	write(itstr,'(I5.5)') it
+	write(itstr,'(I7.7)') it
 
 	fname="soln_"//trim(itstr)//".dat"
         open(unit=5,file=trim(fname))

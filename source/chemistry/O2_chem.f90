@@ -144,7 +144,7 @@ subroutine assignreactions()
 	isratearrh(rnum) = .true.
 	!this reaction rate is calculated at 300 K gas 
 	!temperature from Doug's thesis
-	k_arrh(1,rnum)   =  1.99d-6*(cm_to_m**3)
+	k_arrh(1,rnum)   =  1.99d-7*(cm_to_m**3)
 	k_arrh(2,rnum)   =  0.0
 	k_arrh(3,rnum)   =  0.d0
 	!-----------------------------------
