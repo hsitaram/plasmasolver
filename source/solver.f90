@@ -45,6 +45,9 @@ module plasma_solver
       integer :: kspdim
       integer :: itmax_restart
 
+      real*8  :: restart_time
+      integer :: restart_it
+
       contains
 !=============================================================================
 subroutine init()
@@ -56,11 +59,15 @@ subroutine init()
 	character(LEN=100) :: restartfname
 
 	integer :: restartfptr,inpfptr,logfileptr
-	real*8  :: specinit(nspecies)
+	real*8  :: specinit(nspecies),dummy
+	real*8  :: ndens_restart
+	integer :: nderived_quantities
+	integer :: j
 
 	inpfptr  = 23
 	restartfptr = 24
 	logfileptr = 25
+	nderived_quantities=5
 
 	call initializechemistry()
 
@@ -90,6 +97,13 @@ subroutine init()
 		restart = .false.
 	endif
 	read(inpfptr,*),temp,restartfname
+	read(inpfptr,*),temp,restart_time
+	if(restart .eqv. .true.) then
+        	restart_it = floor(restart_time/dt)+1
+	else
+		restart_it   = 0
+		restart_time = 0.d0
+	endif
 
 	!neutral gas parameters
 	read(inpfptr,*),temp	
@@ -140,12 +154,27 @@ subroutine init()
 	
 		Ee(:)  = 1.5*numden(:,especnum)*Te(:)
 	else
-		print *,"Restarting not implemented yet"
-		stop
-		!open(unit=restartfptr,file=trim(restartfname))
-		!do i=1,np
-		!enddo
-		!close(restartfptr)
+		!NOTE: Restart file has the same format as the output solution files
+		open(unit=restartfptr,file=trim(restartfname))
+		
+		do i=1,np
+			
+      			read(restartfptr,'(E20.10,E20.10,E20.10)',advance='no') dummy, &
+			phi(i),efield(i)
+
+			do j=1,nspecies
+				read(restartfptr,'(E20.10)',advance='no') ndens_restart
+				numden(i,j)=ndens_restart/nscale
+			enddo
+			read(restartfptr,'(E20.10,E20.10)',advance='no') Ee(i),Te(i)
+
+			do j=1,nderived_quantities-1
+				read(restartfptr,'(E20.10)',advance='no') dummy
+			enddo
+			read(restartfptr,'(E20.10)',advance='yes') dummy
+		enddo
+		
+		close(restartfptr)
 	endif
 	
 	write(logfileptr,'(A,E20.10)') "Length:"         ,length
@@ -176,7 +205,7 @@ subroutine init()
 	close(logfileptr)
 	close(inpfptr)
 	
-	call printfile(0)
+	call printfile(restart_it)
 
 
 end subroutine init
@@ -730,8 +759,8 @@ subroutine timestepping()
 	allocate(residual(nresiduals))
 	open(unit=fnum,file='residual.dat')
 	
-	it = 0
-	time = 0.d0
+	it =   restart_it
+	time = restart_time
 	
 	printflag=.false.
 	do while((it .lt. maxtimesteps) .and. (time .lt. finaltime))
